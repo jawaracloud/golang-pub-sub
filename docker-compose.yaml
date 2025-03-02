@@ -1,0 +1,51 @@
+name: go-pubsub-demo
+services:
+  dragonfly:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonfly_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pubsub_demo
+      
+  publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile.publisher
+    depends_on:
+      dragonfly:
+        condition: service_healthy
+    environment:
+      - REDIS_ADDR=dragonfly:6379
+      - CHANNEL=messages
+    networks:
+      - pubsub_demo
+
+  subscriber:
+    build:
+      context: .
+      dockerfile: Dockerfile.subscriber
+    depends_on:
+      dragonfly:
+        condition: service_healthy
+    environment:
+      - REDIS_ADDR=dragonfly:6379
+      - CHANNEL=messages
+    networks:
+      - pubsub_demo
+
+volumes:
+  dragonfly_data:
+    name: dragonfly_data
+networks:
+  pubsub_demo:
+    name: pubsub_demo
+    driver: bridge

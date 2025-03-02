@@ -1,0 +1,49 @@
+# Binaries and executables
+**/publisher
+**/subscriber
+**/*.exe
+**/*.exe~
+**/*.dll
+**/*.so
+**/*.dylib
+
+# Test binary, built with `go test -c`
+**/*.test
+
+# Output of the go coverage tool
+**/*.out
+
+# Go workspace file
+go.work
+
+# Docker files
+Dockerfile*
+docker-compose.yml
+
+# Git related files
+.git
+.gitignore
+
+# IDE specific files
+.idea/
+.vscode/
+**/*.swp
+**/*.swo
+
+# Environment files
+.env
+.env.*
+
+# Dependency directories (vendors)
+**/vendor/
+
+# Temporary files
+**/tmp/
+**/temp/
+
+# Build directories
+**/build/
+**/dist/
+
+# Log files
+**/*.log

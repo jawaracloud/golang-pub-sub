@@ -1,0 +1,26 @@
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY sub.go ./
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o subscriber sub.go
+
+# Create a minimal image
+FROM alpine:latest
+
+WORKDIR /app
+
+# Copy the binary from builder
+COPY --from=builder /app/subscriber .
+
+# Run the application
+CMD ["./subscriber"]

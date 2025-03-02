@@ -3,19 +3,13 @@
 This project demonstrates the Publisher/Subscriber pattern using Golang and DragonFlyDB. It consists of two services:
 
 1. **Publisher Service (pub.go)** - Publishes messages to a channel
-2. **Subscriber Service (sub.go)** - Subscribes to the channel and processes messages
+2. **Subscriber Service (subscriber.go)** - Subscribes to the channel and processes messages
 
 ## Prerequisites
 
 - Go 1.21 or higher
 - Docker and Docker Compose (for containerized deployment)
 - DragonFlyDB (automatically set up with Docker Compose)
-
-<!---
-## Architecture
-
-![Pub/Sub Architecture](https://mermaid.ink/img/pako:eNqFkTFuwzAMRa8iaBIQoLdwixZFliTokGZha1GgQKQoUkl06d0r22iDDh2WRZDf40fwAI1TBAXoTONeuxFfnBeHUBEGcqbXuBkiJGYyBo_7j1rYcZQlCpIcLIZa5gxZWKOdpX6vZSiP8W7Fy3yq-a_9TMST8ZbPTAFPgmVh2SnM3_kuLf7SJv7W2vJlRXnhrNXBEn5NP-tpPCnvjMWYs2SPcWXJzprScZ2nwGQp1F1GvdOtNuSljnNvJkuGtM6TlJ_Sz00_t-OYYQs5YYQbpM6QVeQ_nXlEZzGSVGQlJxb_vYPfVqnpO3QYwHn4jBiVaBEKoEKG4n0DVFB9RW9aGNB37XfUYzedM3Z7-gHlkI_5)
--->
 
 ## How It Works
 
@@ -52,7 +46,7 @@ docker run -p 6379:6379 docker.dragonflydb.io/dragonflydb/dragonfly
 
 2. Run the subscriber:
 ```bash
-go run sub.go
+go run subscriber.go
 ```
 
 3. Run the publisher:
@@ -62,15 +56,17 @@ go run pub.go
 
 ## Configuration
 
-Both the publisher and subscriber accept these command-line flags:
+Both the publisher and subscriber retrieve configuration via environment variables. The following environment variables control the configuration:
 
-- `-redis` - DragonFlyDB address (default: "localhost:6379")
-- `-channel` - Channel name (default: "messages")
+- `REDIS_ADDR` - DragonFlyDB address (default: "localhost:6379")
+- `CHANNEL` - Channel name (default: "messages")
 
-Example:
+Example environment variable usage:
 ```bash
-go run pub.go -redis=localhost:6379 -channel=custom-channel
-go run sub.go -redis=localhost:6379 -channel=custom-channel
+export REDIS_ADDR=localhost:6379
+export CHANNEL=custom-channel
+go run pub.go
+go run subscriber.go
 ```
 
 ## Message Format
@@ -89,10 +85,10 @@ Messages are JSON-encoded with the following structure:
 
 Both services handle SIGINT and SIGTERM signals for graceful shutdown:
 
-1. Stop publishing/receiving messages
-2. Unsubscribe from channels (for subscribers)
-3. Close DragonFlyDB connections
-4. Exit cleanly
+1. Stop publishing/receiving messages.
+2. Unsubscribe from channels (for subscribers).
+3. Close DragonFlyDB connections.
+4. Exit cleanly.
 
 ## Extensions and Improvements
 

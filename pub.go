@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -22,18 +21,24 @@ type Message struct {
 }
 
 func main() {
-	// Command line flags for configuration
-	redisAddr := flag.String("redis", "localhost:6379", "DragonFly DB address")
-	channel := flag.String("channel", "messages", "Channel to publish to")
-	flag.Parse()
+	// Retrieve configuration from environment variables with default fallback
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
+
+	channel := os.Getenv("CHANNEL")
+	if channel == "" {
+		channel = "messages"
+	}
 
 	// Set up logger
 	logger := log.New(os.Stdout, "[PUBLISHER] ", log.LstdFlags)
-	logger.Printf("Starting publisher service. Publishing to channel: %s", *channel)
+	logger.Printf("Starting publisher service. Publishing to channel: %s", channel)
 
 	// Connect to DragonFlyDB
 	client := redis.NewClient(&redis.Options{
-		Addr:     *redisAddr,
+		Addr:     redisAddr,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -62,7 +67,7 @@ func main() {
 				return
 			default:
 				messageCount++
-				
+
 				// Create a new message
 				msg := Message{
 					ID:        fmt.Sprintf("msg-%d", messageCount),
@@ -78,7 +83,7 @@ func main() {
 				}
 
 				// Publish message to channel
-				err = client.Publish(ctx, *channel, jsonMsg).Err()
+				err = client.Publish(ctx, channel, jsonMsg).Err()
 				if err != nil {
 					logger.Printf("Error publishing message: %v", err)
 				} else {
@@ -94,11 +99,11 @@ func main() {
 	// Wait for termination signal
 	<-sigChan
 	logger.Println("Shutdown signal received, closing connections...")
-	
+
 	// Close the Redis client connection
 	if err := client.Close(); err != nil {
 		logger.Printf("Error closing Redis connection: %v", err)
 	}
-	
+
 	logger.Println("Publisher service stopped")
 }
